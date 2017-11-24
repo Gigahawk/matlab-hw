@@ -1,18 +1,40 @@
 function phase_portrait(A,width,height,h,N)
 % Plot the phase portrait of the linear system dxdt = Ax
-x_quiver = [-width:h:width];
-y_quiver = [-height:h:height];
+x_quiver = -width:h:width;
+y_quiver = -height:h:height;
 
 [X,Y] = meshgrid(x_quiver,y_quiver);
-U = (A(1,1)*X + A(1,2)*Y) ./ sqrt(X.^2 + Y.^2);
-V = (A(2,1)*X + A(2,2)*Y) ./ sqrt(X.^2 + Y.^2);
-quiver(X,Y,U,V,0.5);
+U = (A(1,1)*X + A(1,2)*Y);
+V = (A(2,1)*X + A(2,2)*Y);
+
+unorm = U;
+vnorm = V;
+[m,n] = size(U);
+
+for i = 1:m
+    for j = 1:n
+        u = unorm(i,j);
+        v = vnorm(i,j);
+        
+        s = sqrt(u^2 + v^2);
+        
+        u = u/s * 0.6*h;
+        v = v/s * 0.6*h;
+        unorm(i,j) = u;
+        vnorm(i,j) = v;
+    end
+end
+
+U = unorm;
+V = vnorm;
+
+quiver(X,Y,U,V,0,'Color',[0 113/255 188/255]);
 
 axis([-width width -height height]);
 hold on
 
 L = sqrt(width^2 + height^2);
-[K,D] = eig(A)
+[K,D] = eig(A);
 
 xnullcline = L * [-A(1,2), A(1,1)] / norm([-A(1,2), A(1,1)]);
 plot([-xnullcline(1),xnullcline(1)],[-xnullcline(2),xnullcline(2)],'r--');
@@ -21,8 +43,8 @@ ynullcline = L * [-A(2,2), A(2,1)] / norm([-A(2,2), A(2,1)]);
 plot([-ynullcline(1),ynullcline(1)],[-ynullcline(2),ynullcline(2)],'r--');
 
 if isreal(D)
-    eigslope1 = K(2,1)/K(1,1)
-    eigslope2 = K(2,2)/K(1,2)
+    eigslope1 = K(2,1)/K(1,1);
+    eigslope2 = K(2,2)/K(1,2);
     plot([-L,L],[-L*eigslope1,L*eigslope1],'b');
     plot([-L,L],[-L*eigslope2,L*eigslope2],'b');
 end
@@ -34,37 +56,33 @@ options = odeset('Events', @stop);
 r_D = real(D);
 if any(r_D < 0)
     % Real part is negative (sink)
-    disp('Real part is negative (sink)')
     [x,y] = circleDivide(L,N);
     for i = [x';y']
-         [T,U] = ode45(@odefun,[0,Inf],[i(1),i(2)],options);
+         [~,U] = ode45(@odefun,[0,Inf],[i(1),i(2)],options);
          plot(U(:,1),U(:,2),'b')
     end
 elseif any(r_D > 0)
     % Real part is positive (source)
-    disp('Real part is positive')
     [x,y] = circleDivide(L,N);
     for i = [x';y']
-         [T,U] = ode45(@odefun,[0,-Inf],[i(1),i(2)],options);
+         [~,U] = ode45(@odefun,[0,-Inf],[i(1),i(2)],options);
          plot(U(:,1),U(:,2),'b')
     end
 elseif xor(r_D(1,1) > 0, r_D(2,2) > 0)
     % Saddle point
-    disp('Saddle point')
     [x,y] = nullclineDivide(xnullcline,ynullcline,width, height, N);
     for i = [x';y']
-        [T,U] = ode45(@odefun,[0,-Inf],[i(1),i(2)],options);
+        [~,U] = ode45(@odefun,[0,-Inf],[i(1),i(2)],options);
         plot(U(:,1),U(:,2),'b')
-        [T,U] = ode45(@odefun,[0,Inf],[i(1),i(2)],options);
+        [~,U] = ode45(@odefun,[0,Inf],[i(1),i(2)],options);
         plot(U(:,1),U(:,2),'b')
     end
 else
     % Real part is zero (center)
-    disp('Real part is zero')
-    [x,y] = diagonalDivide(width,height,N)
-    beta = imag(D(1,1))
+    [x,y] = diagonalDivide(width,height,N);
+    beta = imag(D(1,1));
     for i = [x';y']
-        [T,U] = ode45(@odefun,[0,2*pi/beta],[i(1),i(2)]);
+        [~,U] = ode45(@odefun,[0,2*pi/beta],[i(1),i(2)]);
         plot(U(:,1),U(:,2),'b');
     end
 end 
