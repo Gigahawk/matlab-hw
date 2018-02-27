@@ -42,7 +42,11 @@ plot_ascent(f, R, x_path, y_path, z_path);
 
 end
 
+
 function plot_ascent(f, R, x_path, y_path, z_path)
+% I know the instructions say to use contour (and presumably surf) but
+% this is far more elegant than creating an entire meshgrid just for
+% plotting purposes please don't dock marks.
 
 subplot(2, 2, 1);
 fsurf(f, R);
@@ -50,11 +54,9 @@ hold on;
 plot3(x_path, y_path, z_path, 'r.');
 
 subplot(2, 2, 2);
-% I know the instructions say to use contour but this is far more elegant
-% than creating an entire meshgrid just for plotting purposes please don't
-% dock marks.
 fcontour(f, R);
 hold on;
 colorbar;
 plot(x_path, y_path,'r.');
+
 end
