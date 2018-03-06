@@ -1,5 +1,6 @@
 function area = tri_surface_area(T,X,Y,Z)
 trimesh(T,X,Y,Z);
+axis equal;
 
 V = [X Y Z];
 
